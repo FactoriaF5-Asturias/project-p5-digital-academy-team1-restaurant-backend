@@ -2,12 +2,14 @@ package dev.team1;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 
 @SpringBootApplication
-public class RestaurantApplication {
+@EntityScan(basePackages = "dev.team1")
+public class App {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RestaurantApplication.class, args);
+		SpringApplication.run(App.class, args);
 	}
 
 }
