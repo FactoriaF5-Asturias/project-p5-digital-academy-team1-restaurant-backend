@@ -1,4 +1,4 @@
-package dev.team1.bills.dtos;
+package dev.team1.invoices.dtos;
 
 public record SummaryDTOResponse() {
 
