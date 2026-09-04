@@ -1,5 +1,5 @@
 package dev.team1.products;
 
-public class Product {
+public class ProductEntity {
 
 }

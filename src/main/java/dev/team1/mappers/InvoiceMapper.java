@@ -1,5 +1,5 @@
 package dev.team1.mappers;
 
-public class BillMapper {
+public class InvoiceMapper {
 
 }
