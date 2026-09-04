@@ -1,4 +1,4 @@
-package dev.team1.implementations;
+package dev.team1.contracts;
 
 public interface IGenericGetService {
 
