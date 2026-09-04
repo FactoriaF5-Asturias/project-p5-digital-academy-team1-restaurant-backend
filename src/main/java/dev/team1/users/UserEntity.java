@@ -1,5 +1,5 @@
 package dev.team1.users;
 
-public class User {
+public class UserEntity {
 
 }
