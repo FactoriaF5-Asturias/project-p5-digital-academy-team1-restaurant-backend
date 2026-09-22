@@ -34,18 +34,18 @@ public class InvoiceEntity {
   private OrderEntity order;
   
   @Column(name = "invoice_number", nullable = false, length = 255)
-  private String invoice_number;
+  private String invoiceNumber;
 
   @Column(name = "amount", nullable = false)
   private BigDecimal amount;
 
   @Column(name = "paid_at", nullable = false)
-  private Instant paid_at;
+  private Instant paidAt;
 
   @Builder
-  public InvoiceEntity(String invoice_number, BigDecimal amount, Instant paid_at) {
-    this.invoice_number = invoice_number;
+  public InvoiceEntity(String invoiceNumber, BigDecimal amount, Instant paidAt) {
+    this.invoiceNumber = invoiceNumber;
     this.amount = amount;
-    this.paid_at = paid_at;
+    this.paidAt = paidAt;
   }
 }
