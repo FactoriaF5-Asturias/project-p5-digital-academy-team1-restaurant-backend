@@ -1,7 +1,6 @@
 package dev.team1.invoices;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.Instant;
 
 import dev.team1.orders.OrderEntity;
