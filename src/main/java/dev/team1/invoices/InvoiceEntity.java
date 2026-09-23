@@ -2,6 +2,7 @@ package dev.team1.invoices;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
 
 import dev.team1.orders.OrderEntity;
 import jakarta.persistence.Column;
@@ -33,8 +34,9 @@ public class InvoiceEntity {
   @JoinColumn(name = "id_order")
   private OrderEntity order;
   
-  @Column(name = "invoice_number", nullable = false, length = 255)
-  private String invoiceNumber;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(name = "invoice_number", nullable = false)
+  private UUID invoiceNumber;
 
   @Column(name = "amount", nullable = false)
   private BigDecimal amount;
@@ -43,8 +45,7 @@ public class InvoiceEntity {
   private Instant paidAt;
 
   @Builder
-  public InvoiceEntity(String invoiceNumber, BigDecimal amount, Instant paidAt) {
-    this.invoiceNumber = invoiceNumber;
+  public InvoiceEntity(BigDecimal amount, Instant paidAt) {
     this.amount = amount;
     this.paidAt = paidAt;
   }
