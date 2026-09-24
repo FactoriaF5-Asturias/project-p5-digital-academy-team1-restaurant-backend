@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.hibernate.annotations.UuidGenerator;
+
 import dev.team1.orders.OrderEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,8 +36,8 @@ public class InvoiceEntity {
   @JoinColumn(name = "id_order")
   private OrderEntity order;
   
-  @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "invoice_number", nullable = false)
+  @UuidGenerator
+  @Column(name = "invoice_number", nullable = false, unique = true)
   private UUID invoiceNumber;
 
   @Column(name = "amount", nullable = false)

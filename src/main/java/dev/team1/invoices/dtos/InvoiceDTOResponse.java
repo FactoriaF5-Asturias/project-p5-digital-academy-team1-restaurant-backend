@@ -12,7 +12,7 @@ public record InvoiceDTOResponse(
   Long orderId,
   UUID invoiceNumber,
   BigDecimal amount,
-  Instant paiAat
+  Instant paidAt
 ) {
 
 }

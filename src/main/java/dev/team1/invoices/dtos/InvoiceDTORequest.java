@@ -6,12 +6,11 @@ import java.util.UUID;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 public record InvoiceDTORequest(
-  @NotBlank(message = "El campo 'invoice_number no debe de ser vacío")
+  @NotNull(message = "El campo 'invoice_number no debe de ser vacío")
   UUID invoiceNumber,
 
   @NotNull(message = "El campo 'amount' es obligatorio")
