@@ -34,6 +34,9 @@ public class AuthController {
     @Value("/${api-endpoint}/auth/refresh")
     private String refreshPath;
 
+    @Value("${cookie-same-site}")
+    private String sameSite;
+
     @PostMapping("login")
     public ResponseEntity<UserResponseDTO> loginHandler(@RequestBody @Valid CredentialsDTO credentials, HttpServletResponse response) {
         
@@ -89,6 +92,7 @@ public class AuthController {
             (int) Duration.ofMinutes(15).toSeconds()
         );
         cookie.setPath(path);
+        cookie.setAttribute("SameSite", sameSite);      
         return cookie;
     }
 
