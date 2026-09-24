@@ -36,6 +36,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 
 @WebMvcTest(controllers = KitchenController.class, properties = "api-endpoint=api/v1")
 @Import(SecurityConfiguration.class)
@@ -121,6 +123,7 @@ class KitchenControllerTest {
                 .thenReturn(kitchenResponse(OrderStatus.READY, false));
 
         mockMvc.perform(patch("/api/v1/kitchen/orders/1/status")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"status":"READY"}
@@ -138,6 +141,7 @@ class KitchenControllerTest {
                         org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid kitchen status: PAID"));
 
         mockMvc.perform(patch("/api/v1/kitchen/orders/1/status")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"status":"PAID"}
@@ -154,6 +158,7 @@ class KitchenControllerTest {
                         org.springframework.http.HttpStatus.NOT_FOUND, "Order not found: 99"));
 
         mockMvc.perform(patch("/api/v1/kitchen/orders/99/status")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"status":"READY"}

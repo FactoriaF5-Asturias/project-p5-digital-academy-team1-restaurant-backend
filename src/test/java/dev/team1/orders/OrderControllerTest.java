@@ -37,6 +37,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
+
 @WebMvcTest(controllers = OrderController.class, properties = "api-endpoint=api/v1")
 @Import(SecurityConfiguration.class)
 class OrderControllerTest {
@@ -70,6 +73,7 @@ class OrderControllerTest {
         when(service.createOrder(request, "tablet-12")).thenReturn(response(OrderStatus.PLACED));
 
         mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Device-Identifier", "tablet-12")
                         .content("""
@@ -94,6 +98,7 @@ class OrderControllerTest {
         when(service.createOrder(request, "tablet-7")).thenReturn(response(OrderStatus.PLACED));
 
         mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Device-Identifier", "tablet-7")
                         .content("""
@@ -113,6 +118,7 @@ class OrderControllerTest {
         when(service.createOrder(request, null)).thenReturn(response(OrderStatus.PLACED));
 
         mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"items":[{"productId":2,"quantity":1}],"channel":"ONLINE","paymentMethod":"CREDITCARD"}
@@ -132,6 +138,7 @@ class OrderControllerTest {
                 org.springframework.http.HttpStatus.BAD_REQUEST, "Device identifier is required"));
 
         mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"items":[{"productId":2,"quantity":1}],"channel":"ONSITE","paymentMethod":"CASH"}
@@ -151,6 +158,7 @@ class OrderControllerTest {
                 org.springframework.http.HttpStatus.NOT_FOUND, "No table found for the given device."));
 
         mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Device-Identifier", "unknown-device")
                         .content("""
@@ -165,10 +173,11 @@ class OrderControllerTest {
     @WithMockUser("CUSTOMER")
         void createOrderRejectsMissingChannel() throws Exception {
                 mockMvc.perform(post("/api/v1/orders")
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content("""
-                                                                {"items":[{"productId":2,"quantity":2}],"paymentMethod":"CASH"}
-                                                                """))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {"items":[{"productId":2,"quantity":2}],"paymentMethod":"CASH"}
+                                        """))
                                 .andExpect(status().isBadRequest());
                 verifyNoInteractions(service);
         }
@@ -177,10 +186,11 @@ class OrderControllerTest {
     @WithMockUser("CUSTOMER")
         void createOrderRejectsMissingPaymentMethod() throws Exception {
                 mockMvc.perform(post("/api/v1/orders")
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content("""
-                                                                {"items":[{"productId":2,"quantity":2}],"channel":"ONSITE"}
-                                                                """))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {"items":[{"productId":2,"quantity":2}],"channel":"ONSITE"}
+                                        """))
                                 .andExpect(status().isBadRequest());
                 verifyNoInteractions(service);
         }
@@ -189,10 +199,11 @@ class OrderControllerTest {
     @WithMockUser("CUSTOMER")
         void createOrderRejectsInvalidEnumValue() throws Exception {
                 mockMvc.perform(post("/api/v1/orders")
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content("""
-                                                                {"items":[{"productId":2,"quantity":2}],"channel":"RESTAURANT","paymentMethod":"CASH"}
-                                                                """))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"items":[{"productId":2,"quantity":2}],"channel":"RESTAURANT","paymentMethod":"CASH"}
+                                                """))
                                 .andExpect(status().isBadRequest());
                 verifyNoInteractions(service);
         }
@@ -202,7 +213,8 @@ class OrderControllerTest {
     void markAsPaidReturnsPaidOrder() throws Exception {
         when(service.markAsPaid(1L)).thenReturn(response(OrderStatus.PAID));
 
-        mockMvc.perform(patch("/api/v1/orders/1/paid"))
+        mockMvc.perform(patch("/api/v1/orders/1/paid")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.status").value("PAID"));

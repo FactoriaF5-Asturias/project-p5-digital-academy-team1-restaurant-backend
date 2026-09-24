@@ -47,6 +47,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 @WebMvcTest(controllers = ProductController.class)
 @Import(SecurityConfiguration.class)
 public class ProductControllerTest {
@@ -300,6 +302,7 @@ public class ProductControllerTest {
 
         when(service.store(mockReqDTO)).thenReturn(mockRespDTO);
         MockHttpServletResponse response = mockMvc.perform(post("/api/v1/products")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reqJson))
             .andExpect(status().is(201))
@@ -333,6 +336,7 @@ public class ProductControllerTest {
 
         when(service.update(1L, mockReqDTO)).thenReturn(mockRespDTO);
         MockHttpServletResponse response = mockMvc.perform(patch("/api/v1/products/1")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reqJson))
             .andExpect(status().is(200))
@@ -358,6 +362,7 @@ public class ProductControllerTest {
 
         when(service.update(1L, mockReqDTO)).thenReturn(mockRespDTO);
         MockHttpServletResponse response = mockMvc.perform(patch("/api/v1/products/1")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reqJson))
             .andExpect(status().is(200))
