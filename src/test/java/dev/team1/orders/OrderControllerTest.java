@@ -37,6 +37,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
+
 @WebMvcTest(controllers = OrderController.class, properties = "api-endpoint=api/v1")
 @Import(SecurityConfiguration.class)
 class OrderControllerTest {
@@ -69,15 +72,16 @@ class OrderControllerTest {
                                 "No onions", OrderChannel.ONSITE, PaymentMethod.CARD_ONSITE);
                 when(service.createOrder(request, "tablet-12")).thenReturn(response(OrderStatus.PLACED));
 
-                mockMvc.perform(post("/api/v1/orders")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .header("Device-Identifier", "tablet-12")
-                                .content("""
-                                                {"items":[{"productId":2,"quantity":2}],"chefNote":"No onions","channel":"ONSITE","paymentMethod":"CARD_ONSITE"}
-                                                """))
-                                .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.id").value(1))
-                                .andExpect(jsonPath("$.status").value("PLACED"))
+        mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Device-Identifier", "tablet-12")
+                        .content("""
+                                {"items":[{"productId":2,"quantity":2}],"chefNote":"No onions","channel":"ONSITE","paymentMethod":"CARD_ONSITE"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.status").value("PLACED"))
                                 .andExpect(jsonPath("$.channel").value("ONSITE"))
                                 .andExpect(jsonPath("$.paymentMethod").value("CARD_ONSITE"))
                                 .andExpect(jsonPath("$.tableNumber").value(12))
@@ -93,13 +97,14 @@ class OrderControllerTest {
                                 null, OrderChannel.ONSITE, PaymentMethod.CASH_ONSITE);
                 when(service.createOrder(request, "tablet-7")).thenReturn(response(OrderStatus.PLACED));
 
-                mockMvc.perform(post("/api/v1/orders")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .header("Device-Identifier", "tablet-7")
-                                .content("""
-                                                {"items":[{"productId":2,"quantity":1}],"channel":"ONSITE","paymentMethod":"CASH_ONSITE"}
-                                                """))
-                                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Device-Identifier", "tablet-7")
+                        .content("""
+                                {"items":[{"productId":2,"quantity":1}],"channel":"ONSITE","paymentMethod":"CASH_ONSITE"}
+                                """))
+                .andExpect(status().isCreated());
 
                 verify(service).createOrder(request, "tablet-7");
         }
@@ -112,12 +117,13 @@ class OrderControllerTest {
                                 null, OrderChannel.ONLINE, PaymentMethod.ONLINE_CARD);
                 when(service.createOrder(request, null)).thenReturn(response(OrderStatus.PLACED));
 
-                mockMvc.perform(post("/api/v1/orders")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                                {"items":[{"productId":2,"quantity":1}],"channel":"ONLINE","paymentMethod":"ONLINE_CARD"}
-                                                """))
-                                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"items":[{"productId":2,"quantity":1}],"channel":"ONLINE","paymentMethod":"ONLINE_CARD"}
+                                """))
+                .andExpect(status().isCreated());
 
                 verify(service).createOrder(request, null);
         }
@@ -131,12 +137,13 @@ class OrderControllerTest {
                 when(service.createOrder(request, null)).thenThrow(new ResponseStatusException(
                                 org.springframework.http.HttpStatus.BAD_REQUEST, "Device identifier is required"));
 
-                mockMvc.perform(post("/api/v1/orders")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                                {"items":[{"productId":2,"quantity":1}],"channel":"ONSITE","paymentMethod":"CASH_ONSITE"}
-                                                """))
-                                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"items":[{"productId":2,"quantity":1}],"channel":"ONSITE","paymentMethod":"CASH_ONSITE"}
+                                """))
+                .andExpect(status().isBadRequest());
 
                 verify(service).createOrder(request, null);
         }
@@ -150,13 +157,14 @@ class OrderControllerTest {
                 when(service.createOrder(request, "unknown-device")).thenThrow(new ResponseStatusException(
                                 org.springframework.http.HttpStatus.NOT_FOUND, "No table found for the given device."));
 
-                mockMvc.perform(post("/api/v1/orders")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .header("Device-Identifier", "unknown-device")
-                                .content("""
-                                                {"items":[{"productId":2,"quantity":1}],"channel":"ONSITE","paymentMethod":"CASH_ONSITE"}
-                                                """))
-                                .andExpect(status().isNotFound());
+        mockMvc.perform(post("/api/v1/orders")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Device-Identifier", "unknown-device")
+                        .content("""
+                                {"items":[{"productId":2,"quantity":1}],"channel":"ONSITE","paymentMethod":"CASH_ONSITE"}
+                                """))
+                .andExpect(status().isNotFound());
 
                 verify(service).createOrder(request, "unknown-device");
         }
@@ -165,10 +173,11 @@ class OrderControllerTest {
         @WithMockUser("CUSTOMER")
         void createOrderRejectsMissingChannel() throws Exception {
                 mockMvc.perform(post("/api/v1/orders")
+                                .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"items":[{"productId":2,"quantity":2}],"paymentMethod":"CASH_ONSITE"}
-                                                """))
+                                        {"items":[{"productId":2,"quantity":2}],"paymentMethod":"CASH_ONSITE"}
+                                        """))
                                 .andExpect(status().isBadRequest());
                 verifyNoInteractions(service);
         }
@@ -177,10 +186,11 @@ class OrderControllerTest {
         @WithMockUser("CUSTOMER")
         void createOrderRejectsMissingPaymentMethod() throws Exception {
                 mockMvc.perform(post("/api/v1/orders")
+                                .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"items":[{"productId":2,"quantity":2}],"channel":"ONSITE"}
-                                                """))
+                                        {"items":[{"productId":2,"quantity":2}],"channel":"ONSITE"}
+                                        """))
                                 .andExpect(status().isBadRequest());
                 verifyNoInteractions(service);
         }
@@ -189,6 +199,7 @@ class OrderControllerTest {
         @WithMockUser("CUSTOMER")
         void createOrderRejectsInvalidEnumValue() throws Exception {
                 mockMvc.perform(post("/api/v1/orders")
+                                .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                                 {"items":[{"productId":2,"quantity":2}],"channel":"RESTAURANT","paymentMethod":"CASH_ONSITE"}
@@ -202,12 +213,13 @@ class OrderControllerTest {
         void markAsPaidReturnsPaidOrder() throws Exception {
                 when(service.markAsPaid(1L)).thenReturn(response(OrderStatus.PAID));
 
-                mockMvc.perform(patch("/api/v1/orders/1/paid"))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.id").value(1))
-                                .andExpect(jsonPath("$.status").value("PAID"));
-                verify(service).markAsPaid(1L);
-        }
+        mockMvc.perform(patch("/api/v1/orders/1/paid")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.status").value("PAID"));
+        verify(service).markAsPaid(1L);
+    }
 
         @Test
         @WithMockUser("CUSTOMER")

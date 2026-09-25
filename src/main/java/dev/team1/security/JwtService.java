@@ -71,7 +71,7 @@ public class JwtService {
     private String generateJwtToken(String email, String role) {
         Date date = Date.from(
             LocalDateTime.now()
-            .plusMinutes(1)
+            .plusMinutes(5)
             .atZone(ZoneId.systemDefault())
             .toInstant()
         );
@@ -93,7 +93,7 @@ public class JwtService {
     private String generateRefreshToken(String email, String role) {
         Date date = Date.from(
             LocalDateTime.now()
-            .plusDays(7)
+            .plusDays(30)
             .atZone(ZoneId.systemDefault())
             .toInstant()
         );

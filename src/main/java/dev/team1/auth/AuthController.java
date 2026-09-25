@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -29,6 +30,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class AuthController {
 
     private final AuthService authService;
+    
+    @Value("/${api-endpoint}/auth/refresh")
+    private String refreshPath;
+
+    @Value("${cookie-same-site}")
+    private String sameSite;
 
     @PostMapping("login")
     public ResponseEntity<UserResponseDTO> loginHandler(@RequestBody @Valid CredentialsDTO credentials, HttpServletResponse response) {
@@ -37,8 +44,8 @@ public class AuthController {
         
         JwtAuthenticationDTO authDTO = authService.getAuth(userDto.email(), userDto.roles());
         
-        Cookie cookieAccess = generateCookie("access_token", authDTO.token());
-        Cookie cookieRefresh = generateCookie("refresh_token", authDTO.refreshToken());
+        Cookie cookieAccess = generateCookie("access_token", authDTO.token(), "/");
+        Cookie cookieRefresh = generateCookie("refresh_token", authDTO.refreshToken(), refreshPath);
         response.addCookie(cookieAccess);
         response.addCookie(cookieRefresh);
         
@@ -48,8 +55,8 @@ public class AuthController {
     @GetMapping("logout")
     public ResponseEntity<Void> logoutHandler(HttpServletResponse response) {
         
-        Cookie cookieAccess = generateCookie("access_token", "");
-        Cookie cookieRefresh = generateCookie("refresh_token", "");
+        Cookie cookieAccess = generateCookie("access_token", "", "/");
+        Cookie cookieRefresh = generateCookie("refresh_token", "", refreshPath);
         response.addCookie(cookieAccess);
         response.addCookie(cookieRefresh);
         
@@ -63,8 +70,8 @@ public class AuthController {
     ) {
         JwtAuthenticationDTO authDto = authService.updateAuth(refreshToken);
 
-        Cookie cookieAccess = generateCookie("access_token", authDto.token());
-        Cookie cookieRefresh = generateCookie("refresh_token", authDto.refreshToken());
+        Cookie cookieAccess = generateCookie("access_token", authDto.token(), "/");
+        Cookie cookieRefresh = generateCookie("refresh_token", authDto.refreshToken(), refreshPath);
         response.addCookie(cookieAccess);
         response.addCookie(cookieRefresh);
 
@@ -77,14 +84,15 @@ public class AuthController {
     }
     
 
-    private Cookie generateCookie(String key, String value) {
+    private Cookie generateCookie(String key, String value, String path) {
         Cookie cookie = new Cookie(key, value);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setMaxAge(
             (int) Duration.ofMinutes(15).toSeconds()
         );
-        cookie.setPath("/");
+        cookie.setPath(path);
+        cookie.setAttribute("SameSite", sameSite);      
         return cookie;
     }
 
