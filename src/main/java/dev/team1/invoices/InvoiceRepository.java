@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface InvoiceRepository extends JpaRepository<InvoiceEntity, Long> {
 
-  public Optional<InvoiceEntity> findByInvoice_number(UUID invoiceNumber);
+  Optional<InvoiceEntity> findByInvoiceNumber(UUID invoiceNumber);
 
   boolean existsByInvoiceNumber(UUID invoiceNumber);
 }
