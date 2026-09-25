@@ -1,5 +1,77 @@
 package dev.team1.orders;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import dev.team1.enums.OrderChannel;
+import dev.team1.enums.OrderStatus;
+import dev.team1.enums.PaymentMethod;
+import dev.team1.orders_products.OrderProductEntity;
+import dev.team1.tables.TableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+
+@Entity
+@Table(name = "orders")
+@Getter
+@Setter
 public class OrderEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
+    @Column(name = "id_order")
+    private Long id;
+
+    @Column(nullable = false, scale = 2)
+    private BigDecimal subtotal;
+
+    private Integer discountRate;// for discount percentage (e.g.5%)
+
+    @Column(nullable = false, scale = 2) // for the discount amount (e.g. 2.5 euro)
+    private BigDecimal discountAmount;
+
+    @Column(nullable = false)
+    private Integer vatRate;
+
+    @Column(nullable = false, scale = 2)
+    private BigDecimal vatAmount;
+
+    @Column(nullable = false, scale = 2)
+    private BigDecimal total;
+
+    private String chefNote;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderChannel channel;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderProductEntity> orderProducts = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "id_table")
+    private TableEntity table;
 }
