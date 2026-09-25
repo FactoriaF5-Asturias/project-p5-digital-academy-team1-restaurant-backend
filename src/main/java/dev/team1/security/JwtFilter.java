@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -27,11 +28,14 @@ public class JwtFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService customUserService;
     private final HandlerExceptionResolver resolver;
 
-    private final List<String> publicURIList = List.of(
-        "/api/v1/auth/login", 
-        "/api/v1/auth/refresh", 
-        "/api/v1/products",
-        "/api/v1/users"
+    private record PublicURL(String url, HttpMethod method) {}
+
+    private final List<PublicURL> publicURIList = List.of(
+        new PublicURL("/api/v1/auth/login", HttpMethod.POST), 
+        new PublicURL("/api/v1/auth/refresh", HttpMethod.GET), 
+        new PublicURL("/api/v1/products", HttpMethod.GET), 
+        new PublicURL("/api/v1/users", HttpMethod.POST), 
+        new PublicURL("/api/v1/orders", HttpMethod.POST)
     );
 
     public JwtFilter(
@@ -55,8 +59,14 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request);
 
         String uri = request.getRequestURI();
+        String method = request.getMethod();
 
-        if (!publicURIList.contains(uri)) {
+        if (
+            !publicURIList.stream().anyMatch(pu -> 
+                pu.url().equals(uri) && 
+                pu.method().name().equals(method)
+            )
+        ) {
             try {
                 jwtService.validateJwtToken(token);
                     setCustomUserDetailsToSecurityContextHolder(token);

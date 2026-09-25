@@ -111,7 +111,7 @@ class AuthIntegrationTest {
 
     @Test
     void logout_withValidToken_returns204() throws Exception {
-        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_USER").token();
+        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_CUSTOMER").token();
 
         mockMvc.perform(get(apiEndpoint + "/auth/logout")
                 .cookie(new Cookie("access_token", token)))
@@ -127,11 +127,12 @@ class AuthIntegrationTest {
 
     @Test
     void logout_clearsCookiesWithEmptyValue() throws Exception {
-        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_USER").token();
+        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_CUSTOMER").token();
 
         mockMvc.perform(get(apiEndpoint + "/auth/logout")
                 .cookie(new Cookie("access_token", token)))
-            .andExpect(cookie().value("access_token", ""))
+            .andExpect(cookie().exists("access_token"))
+                .andExpect(cookie().value("access_token", ""))
             .andExpect(cookie().value("refresh_token", ""));
     }
 

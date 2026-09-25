@@ -43,8 +43,8 @@ class SecurityIntegrationTest {
     void setUp() {
         RoleEntity adminRole = roleRepository.findByName("ROLE_ADMIN")
             .orElseGet(() -> roleRepository.save(newRole("ROLE_ADMIN")));
-        RoleEntity userRole = roleRepository.findByName("ROLE_USER")
-            .orElseGet(() -> roleRepository.save(newRole("ROLE_USER")));
+        RoleEntity userRole = roleRepository.findByName("ROLE_CUSTOMER")
+            .orElseGet(() -> roleRepository.save(newRole("ROLE_CUSTOMER")));
 
         adminUser = userRepository.save(newUser("admin@test.com", Set.of(adminRole)));
         regularUser = userRepository.save(newUser("user@test.com", Set.of(userRole)));
@@ -58,7 +58,7 @@ class SecurityIntegrationTest {
 
     @Test
     void administration_withUserRole_returns403() throws Exception {
-        String token = jwtService.generateAuthToken(regularUser.getEmail(), "ROLE_USER").token();
+        String token = jwtService.generateAuthToken(regularUser.getEmail(), "ROLE_CUSTOMER").token();
 
         mockMvc.perform(get(apiEndpoint + "/products/administration")
                 .cookie(new Cookie("access_token", token)))
