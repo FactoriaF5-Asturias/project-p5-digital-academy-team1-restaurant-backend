@@ -15,10 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
-
 @RestController
-@RequestMapping(path = "${api-endpoint}/invoices")
+@RequestMapping(path = "${api-endpoint}")
 public class InvoiceController {
   private final IInvoiceService invoiceService;
 
@@ -26,13 +24,14 @@ public class InvoiceController {
     this.invoiceService = invoiceService;
   }
 
-  @PostMapping("")
+  @PostMapping("/invoices")
   public ResponseEntity<InvoiceDTOResponse> create(@Valid @RequestBody InvoiceDTORequest dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(invoiceService.create(dto));
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/invoices/{id}")
   public ResponseEntity<InvoiceDTOResponse> findById(@PathVariable Long id) {
-      return ResponseEntity.ok(invoiceService.findById(id));
+    return ResponseEntity.ok(invoiceService.findById(id));
   }
+
 }
