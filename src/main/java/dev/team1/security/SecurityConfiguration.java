@@ -1,5 +1,7 @@
 package dev.team1.security;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +13,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +32,9 @@ public class SecurityConfiguration {
 
     @Value("/${api-endpoint}")
     private String pre;
+
+    @Value("${frontend-domain}")
+    private String frontendDomain;
 
     @Bean 
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,20 +50,45 @@ public class SecurityConfiguration {
 
         return http
             .httpBasic(AbstractHttpConfigurer::disable)
-            .csrf(csrf -> csrf.disable())
+            
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+            .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+            
+            .cors(cors -> cors
+                .configurationSource(corsConfigurationSource()))
+            
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(pre + "/users").hasRole("ADMIN")
                 .requestMatchers(pre + "/products/administration").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PATCH, pre + "/orders/**").hasAnyAuthority("ROLE_COOK", "ROLE_DELIVERYMAN")
+                .requestMatchers(HttpMethod.POST, pre + "/orders").permitAll()
+                .requestMatchers(HttpMethod.PATCH, pre + "/orders/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_COOK", "ROLE_DELIVERYMAN")
                 .requestMatchers(pre + "/auth/login").permitAll()
                 .requestMatchers(pre + "/auth/refresh").permitAll()
                 .requestMatchers(HttpMethod.GET, pre + "/products").permitAll()
                 .requestMatchers(HttpMethod.POST, pre + "/users").permitAll()
                 .anyRequest().authenticated())
+            
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        
             .build();
+    }
 
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(frontendDomain)); // frontend domain
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true); 
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
 }

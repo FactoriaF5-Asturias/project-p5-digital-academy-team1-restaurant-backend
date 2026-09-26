@@ -23,6 +23,8 @@ import dev.team1.security.JwtService;
 import jakarta.servlet.http.Cookie;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Transactional
@@ -71,6 +73,7 @@ class AuthIntegrationTest {
             """;
 
         mockMvc.perform(post(apiEndpoint + "/auth/login")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
             .andExpect(status().isOk())
@@ -86,6 +89,7 @@ class AuthIntegrationTest {
             """;
 
         mockMvc.perform(post(apiEndpoint + "/auth/login")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
             .andExpect(status().isUnauthorized());
@@ -98,6 +102,7 @@ class AuthIntegrationTest {
             """;
 
         mockMvc.perform(post(apiEndpoint + "/auth/login")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
             .andExpect(status().isUnauthorized());
@@ -106,7 +111,7 @@ class AuthIntegrationTest {
 
     @Test
     void logout_withValidToken_returns204() throws Exception {
-        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_USER").token();
+        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_CUSTOMER").token();
 
         mockMvc.perform(get(apiEndpoint + "/auth/logout")
                 .cookie(new Cookie("access_token", token)))
@@ -122,11 +127,12 @@ class AuthIntegrationTest {
 
     @Test
     void logout_clearsCookiesWithEmptyValue() throws Exception {
-        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_USER").token();
+        String token = jwtService.generateAuthToken(user.getEmail(), "ROLE_CUSTOMER").token();
 
         mockMvc.perform(get(apiEndpoint + "/auth/logout")
                 .cookie(new Cookie("access_token", token)))
-            .andExpect(cookie().value("access_token", ""))
+            .andExpect(cookie().exists("access_token"))
+                .andExpect(cookie().value("access_token", ""))
             .andExpect(cookie().value("refresh_token", ""));
     }
 

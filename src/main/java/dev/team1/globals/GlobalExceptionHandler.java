@@ -67,9 +67,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException exception) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authentication failed: " + exception.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: " + exception.getMessage());
     }
 
     @ExceptionHandler(JwtException.class)
